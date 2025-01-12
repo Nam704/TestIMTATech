@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -28,9 +29,26 @@ class UserController extends Controller
     }
     public function update(Request $request, User $user)
     {
-        // add
-        $user->update($request->all());
-        return redirect()->route('users.index');
+
+        $password = $request->password;
+
+
+
+        $password_confirmation = $request->password_confirmation;
+
+        if ($password == $password_confirmation) {
+            $userData = $request->except('password', 'password_confirmation');
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($password);
+            }
+            $user->update($userData);
+            return redirect()->route('users.index');
+        }
+
+        return redirect()->back()->with(
+            'error',
+            'Password dan Confirm Password tidak sama'
+        );
     }
     public function destroy(User $user)
     {
